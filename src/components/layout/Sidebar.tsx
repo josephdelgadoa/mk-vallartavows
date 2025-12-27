@@ -17,7 +17,7 @@ import clsx from 'clsx';
 const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
     { icon: MessageSquare, label: 'AI Chatbot', href: '/dashboard/chatbot' },
-    { icon: Share2, label: 'Social Media', href: '/dashboard/social-media' },
+    { icon: Share2, label: 'Marketing Content', href: '/dashboard/marketing-content' },
     { icon: Mail, label: 'Email Marketing', href: '/dashboard/email' },
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ];
