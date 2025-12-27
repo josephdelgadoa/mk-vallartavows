@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+:root {
+  /* Vallarta Vows Brand Palette */
+  --color-primary: #1A4D4E;
+  /* Deep Teal */
+  --color-primary-light: #2A6D6E;
+  --color-secondary: #D4AF37;
+  /* Champagne Gold */
+  --color-secondary-light: #F3E5AB;
+  --color-background: #FAFAFA;
+  /* Soft White */
+  --color-surface: #FFFFFF;
+  --color-text-main: #1F2937;
+  /* Dark Charcoal */
+  --color-text-muted: #6B7280;
+  --color-accent: #FF6B6B;
+  /* Soft Sunset Coral */
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+body {
+  color: var(--color-text-main);
+  background: var(--color-background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-dark {
+  background: rgba(26, 77, 78, 0.85);
+  /* Primary color with opacity */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Typography Enhancements */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--color-primary);
+}
+
+/* Clean up Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
