@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  /* Vallarta Vows Brand Palette */
-  --color-primary: #1A4D4E;
-  /* Deep Teal */
-  --color-primary-light: #2A6D6E;
-  --color-secondary: #D4AF37;
-  /* Champagne Gold */
-  --color-secondary-light: #F3E5AB;
-  --color-background: #FAFAFA;
-  /* Soft White */
+  /* Vallarta Vows Brand Palette - Romantic & Whimsical */
+  --color-primary: #9DC183;
+  /* Sage Green */
+  --color-primary-light: #B8D6A2;
+  --color-secondary: #F4C2C2;
+  /* Blush Pink */
+  --color-secondary-light: #FFE4E4;
+  --color-background: #FFFEFA;
+  /* Very warm white */
   --color-surface: #FFFFFF;
-  --color-text-main: #1F2937;
-  /* Dark Charcoal */
-  --color-text-muted: #6B7280;
-  --color-accent: #FF6B6B;
-  /* Soft Sunset Coral */
+  --color-text-main: #483C32;
+  /* Taupe */
+  --color-text-muted: #8B7E74;
+  --color-accent: #E6E6FA;
+  /* Lavender Mist */
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
@@ -45,11 +45,11 @@ body {
 }
 
 .glass-dark {
-  background: rgba(26, 77, 78, 0.85);
-  /* Primary color with opacity */
+  background: rgba(72, 60, 50, 0.85);
+  /* Taupe with opacity */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
 }
 
@@ -62,7 +62,7 @@ h5,
 h6 {
   font-weight: 600;
   letter-spacing: -0.025em;
-  color: var(--color-primary);
+  color: var(--color-text-main);
 }
 
 /* Clean up Scrollbars */

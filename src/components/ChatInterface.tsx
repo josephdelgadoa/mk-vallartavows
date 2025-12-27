@@ -64,20 +64,20 @@ export function ChatInterface() {
     return (
         <div className="flex flex-col h-[600px] bg-white rounded-[var(--radius-lg)] shadow-xl overflow-hidden border border-gray-100">
             {/* Chat Header */}
-            <div className="bg-[var(--color-primary)] p-4 flex items-center justify-between text-white">
+            <div className="bg-[var(--color-primary)] p-4 flex items-center justify-between text-[var(--color-text-main)]">
                 <div className="flex items-center gap-3">
                     <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-[var(--color-text-main)]/10 flex items-center justify-center">
                             <Bot size={24} />
                         </div>
                         <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-[var(--color-primary)] rounded-full"></span>
                     </div>
                     <div>
                         <h3 className="font-bold">Vallarta AI</h3>
-                        <p className="text-xs text-white/70">Always active • Replies instantly</p>
+                        <p className="text-xs text-[var(--color-text-main)]/70">Always active • Replies instantly</p>
                     </div>
                 </div>
-                <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                <button className="p-2 hover:bg-[var(--color-text-main)]/10 rounded-full transition-colors">
                     <MoreVertical size={20} />
                 </button>
             </div>
@@ -103,7 +103,7 @@ export function ChatInterface() {
                         <div className={clsx(
                             "p-4 rounded-[var(--radius-md)] shadow-sm text-sm leading-relaxed",
                             message.sender === 'user'
-                                ? "bg-[var(--color-secondary)] text-[var(--color-primary)] font-medium rounded-tr-none"
+                                ? "bg-[var(--color-secondary)] text-[var(--color-text-main)] font-medium rounded-tr-none"
                                 : "bg-white text-gray-700 rounded-tl-none border border-gray-100"
                         )}>
                             {message.text}
@@ -155,7 +155,7 @@ export function ChatInterface() {
                     <button
                         type="submit"
                         disabled={!inputValue.trim()}
-                        className="p-2 bg-[var(--color-primary)] text-white rounded-full hover:bg-[var(--color-primary-light)] transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
+                        className="p-2 bg-[var(--color-primary)] text-[var(--color-text-main)] rounded-full hover:bg-[var(--color-primary-light)] transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95"
                     >
                         <Send size={18} />
                     </button>
