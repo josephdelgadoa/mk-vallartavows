@@ -75,7 +75,7 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-light)] text-[var(--color-text-main)] font-bold py-3.5 rounded-[var(--radius-md)] transition-all flex items-center justify-center gap-2 group shadow-lg hover:shadow-[var(--color-secondary)/20]"
+                        className="w-full bg-[var(--color-secondary)] hover:bg-[var(--color-secondary-light)] text-white font-bold py-3.5 rounded-[var(--radius-md)] transition-all flex items-center justify-center gap-2 group shadow-lg hover:shadow-[var(--color-secondary)/20]"
                     >
                         {loading ? 'Authenticating...' : 'Sign In'}
                         {!loading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}

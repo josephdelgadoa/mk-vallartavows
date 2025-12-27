@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  /* Vallarta Vows Brand Palette - Romantic & Whimsical */
-  --color-primary: #9DC183;
-  /* Sage Green */
-  --color-primary-light: #B8D6A2;
-  --color-secondary: #F4C2C2;
-  /* Blush Pink */
-  --color-secondary-light: #FFE4E4;
-  --color-background: #FFFEFA;
-  /* Very warm white */
+  /* Vallarta Vows Brand Palette - Tropical Minimalist */
+  --color-primary: #DB2777;
+  /* Hibiscus Pink */
+  --color-primary-light: #F472B6;
+  --color-secondary: #115E59;
+  /* Tropical Green */
+  --color-secondary-light: #2DD4BF;
+  --color-background: #FFF1F2;
+  /* Rose Sand */
   --color-surface: #FFFFFF;
-  --color-text-main: #483C32;
-  /* Taupe */
-  --color-text-muted: #8B7E74;
-  --color-accent: #E6E6FA;
-  /* Lavender Mist */
+  --color-text-main: #374151;
+  /* Deep Charcoal */
+  --color-text-muted: #6B7280;
+  /* Medium Gray */
+  --color-accent: #FBBF24;
+  /* Sunset Gold */
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
@@ -45,8 +46,8 @@ body {
 }
 
 .glass-dark {
-  background: rgba(72, 60, 50, 0.85);
-  /* Taupe with opacity */
+  background: rgba(55, 65, 81, 0.85);
+  /* Deep Charcoal with opacity */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
