@@ -35,22 +35,14 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}Connection successful.${NC}"
 
-# 3. Prepare Remote Directory
-echo -e "\n${YELLOW}Creating remote directory at $REMOTE_DIR...${NC}"
-ssh $DEST "mkdir -p $REMOTE_DIR"
-
-# 4. Sync Files (Including .env.local)
-echo -e "\n${YELLOW}Syncing project files (this may take a moment)...${NC}"
-rsync -avz --progress \
-    --exclude 'node_modules' \
-    --exclude '.git' \
-    --exclude '.next' \
-    --exclude '.DS_Store' \
-    ./ $DEST:$REMOTE_DIR
-
-# 5. Build and Launch
-echo -e "\n${YELLOW}Building and launching application on VPS...${NC}"
+# 3. Trigger Update from GitHub
+echo -e "\n${YELLOW}Triggering pull from GitHub and rebuild on VPS...${NC}"
 ssh $DEST "cd $REMOTE_DIR && \
+    echo 'Pulling latest changes...' && \
+    git config --global --add safe.directory $REMOTE_DIR && \
+    git fetch origin && \
+    git reset --hard origin/main && \
+    echo 'Rebuilding containers...' && \
     docker compose down && \
     docker compose up -d --build && \
     docker system prune -f"

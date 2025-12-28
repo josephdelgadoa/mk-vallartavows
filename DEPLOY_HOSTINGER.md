@@ -47,10 +47,14 @@ If you have already set up the VPS and just want to deploy new changes:
 
 The `deploy.sh` script automates the process:
 
-1.  **Syncs Files**: Copies your local project code to the VPS using `rsync`.
-2.  **Builds**: runs `docker compose build` on the VPS.
-3.  **Restarts**: runs `docker compose up -d` to restart the app with new code.
-4.  **Cleans**: Prunes unused images to save space.
+1.  **Connects**: SSHs into your VPS.
+2.  **Pulls**: Runs `git pull` to get the latest code **directly from GitHub**.
+3.  **Rebuilds**: Runs `docker compose up -d` to restart the app with the new code.
+4.  **Cleans**: Prunes unused images.
+
+> [!NOTE]
+> This means you **MUST push your changes to GitHub first** before running `./deploy.sh`.
+
 
 ## Troubleshooting
 
