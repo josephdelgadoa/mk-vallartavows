@@ -1,33 +1,74 @@
 @import "tailwindcss";
 
 :root {
-  /* Vallarta Vows Brand Palette - Tropical Minimalist */
-  --color-primary: #DB2777;
-  /* Hibiscus Pink */
-  --color-primary-light: #F472B6;
-  --color-secondary: #115E59;
-  /* Tropical Green */
-  --color-secondary-light: #2DD4BF;
-  --color-background: #FFF1F2;
-  /* Rose Sand */
+  /* Modern Trendy SaaS Palette - Refined & Professional */
+
+  /* Primary Brand Colors */
+  --color-primary: #2563EB;
+  /* Royal Blue - Trustworthy & Modern */
+  --color-primary-light: #EFF6FF;
+  /* Very Light Blue for backgrounds */
+  --color-primary-dark: #1E40AF;
+  /* Dark Blue for hover states */
+  --color-on-primary: #FFFFFF;
+  /* Text on Primary */
+
+  /* Secondary Brand Colors */
+  --color-secondary: #475569;
+  /* Slate 600 - Neutral/Sophisticated */
+  --color-secondary-light: #F1F5F9;
+  /* Slate 100 - Backgrounds/Pills */
+  --color-on-secondary: #0F172A;
+  /* Slate 900 */
+
+  /* Backgrounds & Surfaces */
+  --color-background: #F8FAFC;
+  /* Slate 50 - Cleaner, cooler white */
   --color-surface: #FFFFFF;
-  --color-text-main: #374151;
-  /* Deep Charcoal */
-  --color-text-muted: #6B7280;
-  /* Medium Gray */
-  --color-accent: #FBBF24;
-  /* Sunset Gold */
+  /* Pure White cards */
+  --color-surface-hover: #F8FAFC;
+  /* Light gray hover */
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Accents */
+  --color-accent: #8B5CF6;
+  /* Violet - Subtle modern accent */
+  --color-success: #10B981;
+  /* Emerald */
+  --color-error: #EF4444;
+  /* Red 500 */
+  --color-warning: #F59E0B;
+  /* Amber */
 
+  /* Text Colors */
+  --color-text-main: #0F172A;
+  /* Slate 900 - Deepest Blue-Grey */
+  --color-text-muted: #64748B;
+  /* Slate 500 - Secondary text */
+  --color-text-light: #94A3B8;
+  /* Slate 400 - Tertiary/Placeholder */
+
+  /* Borders & Dividers */
+  --color-outline: #E2E8F0;
+  /* Slate 200 - Subtle borders */
+  --color-divider: #F1F5F9;
+  /* Slate 100 */
+
+  /* Typography */
+  --font-sans: 'Inter', 'Google Sans', system-ui, sans-serif;
+
+  /* Modern Radius Tokens */
+  --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Smooth Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.1), 0 2px 4px -2px rgb(15 23 42 / 0.06);
+  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(15 23 42 / 0.1), 0 8px 10px -6px rgb(15 23 42 / 0.05);
 }
 
 body {
@@ -38,20 +79,33 @@ body {
 }
 
 /* Glassmorphism Utilities */
+/* Material Surfaces & Utilities */
+.material-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  /* No border in Material usually, but kept for structure if needed */
+  box-shadow: var(--shadow-sm);
+  /* Elevation 1 */
+}
+
+.material-card:hover {
+  box-shadow: var(--shadow-md);
+  /* Elevation 2 */
+}
+
 .glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  /* Legacy support mapped to surface */
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .glass-dark {
-  background: rgba(55, 65, 81, 0.85);
-  /* Deep Charcoal with opacity */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
+  /* Legacy support mapped to primary container */
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-lg);
 }
 
 /* Typography Enhancements */

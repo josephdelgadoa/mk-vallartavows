@@ -24,57 +24,71 @@ const menuItems = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    // Assuming 'isOpen' state is managed elsewhere or needs to be added for the new header structure
+    // For this change, we'll assume 'isOpen' is true to display the full header content
+    const isOpen = true; // Placeholder for the new header structure
 
     return (
-        <aside className="w-64 h-screen fixed left-0 top-0 bg-[var(--color-primary)] text-white flex flex-col shadow-2xl z-50">
-            <div className="p-6 flex items-center gap-3 border-b border-white/10">
-                <div className="bg-[var(--color-secondary)] p-2 rounded-lg text-[var(--color-primary)]">
-                    <Gem size={24} />
+        <aside className="w-64 h-screen fixed left-0 top-0 bg-[var(--color-surface)] border-r border-[var(--color-outline)] flex flex-col z-50">
+            {/* Replaced header section with the new structure */}
+            <motion.div
+                className={clsx(
+                    'flex flex-col transition-all duration-300 relative z-50 px-6 py-5',
+                    isOpen ? 'w-full' : 'w-20' // Adjusted width for the header part
+                )}
+                initial={false}
+            >
+                {/* Header - Modern Clean */}
+                <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-dark)] flex items-center justify-center shrink-0 shadow-sm text-white font-bold text-lg">
+                        V
+                    </div>
+                    {isOpen && (
+                        <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="font-bold text-lg text-[var(--color-text-main)] tracking-tight whitespace-nowrap"
+                        >
+                            Vallarta Vows
+                        </motion.span>
+                    )}
                 </div>
-                <div>
-                    <h1 className="font-bold text-lg leading-tight">Vallarta Vows</h1>
-                    <p className="text-xs text-white/50">Marketing Suite</p>
-                </div>
-            </div>
+            </motion.div>
 
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+            {/* Navigation Items - Modern Clean Style */}
+            <div className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.href;
                     return (
                         <Link
                             key={item.href}
                             href={item.href}
+                            className={clsx(
+                                'flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-lg)] text-sm font-medium transition-all duration-200 group',
+                                isActive
+                                    ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
+                                    : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-main)]'
+                            )}
                         >
-                            <div
+                            <item.icon
+                                size={18}
                                 className={clsx(
-                                    "flex items-center gap-3 px-4 py-3 rounded-[var(--radius-md)] transition-all duration-200 group relative overflow-hidden",
-                                    isActive
-                                        ? "bg-white/10 text-white font-medium shadow-md"
-                                        : "text-white/70 hover:bg-white/5 hover:text-white"
+                                    "transition-colors",
+                                    isActive ? "text-[var(--color-primary)]" : "text-[var(--color-text-light)] group-hover:text-[var(--color-text-main)]"
                                 )}
-                            >
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute inset-0 bg-white/10 rounded-[var(--radius-md)]"
-                                        initial={false}
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    />
-                                )}
-                                <item.icon size={20} className={clsx(isActive ? "text-[var(--color-secondary)]" : "group-hover:text-white")} />
-                                <span className="relative z-10">{item.label}</span>
-                            </div>
+                            />
+                            <span>{item.label}</span>
                         </Link>
                     );
                 })}
-            </nav>
+            </div>
 
-            <div className="p-4 border-t border-white/10">
-                <button className="flex items-center gap-3 px-4 py-3 w-full rounded-[var(--radius-md)] text-white/70 hover:bg-red-500/20 hover:text-red-200 transition-colors">
-                    <LogOut size={20} />
+            <div className="p-4 border-t border-[var(--color-divider)]">
+                <button className="flex items-center gap-3 px-3 py-2.5 w-full rounded-[var(--radius-lg)] text-[var(--color-text-muted)] hover:bg-red-50 hover:text-red-600 transition-colors text-sm font-medium">
+                    <LogOut size={18} />
                     <span>Sign Out</span>
                 </button>
             </div>
-        </aside>
+        </aside >
     );
 }

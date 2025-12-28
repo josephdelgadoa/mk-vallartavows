@@ -7,19 +7,15 @@ import clsx from 'clsx';
 
 interface Message {
     id: string;
-    text: string;
-    sender: 'user' | 'ai';
+    content: string;
+    role: 'user' | 'assistant';
     timestamp: Date;
 }
 
+// Material 3 Optimized Chat Interface
 export function ChatInterface() {
     const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            text: "Hello Robin! I'm your Vallarta Vows Assistant. I've noticed 3 new high-value leads today. Would you like me to draft introduction emails for them?",
-            sender: 'ai',
-            timestamp: new Date(),
-        },
+        { id: '1', role: 'assistant', content: 'Hello! I am Gemini, your Vallarta Vows assistant. How can I help you plan your dream wedding today?', timestamp: new Date() }
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -39,8 +35,8 @@ export function ChatInterface() {
 
         const newMessage: Message = {
             id: Date.now().toString(),
-            text: inputValue,
-            sender: 'user',
+            content: inputValue,
+            role: 'user',
             timestamp: new Date(),
         };
 
@@ -52,8 +48,8 @@ export function ChatInterface() {
         setTimeout(() => {
             const aiResponse: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "I'm on it! Drafting personalized emails for the leads. I'll also suggest some Instagram captions for your latest venue photos.",
-                sender: 'ai',
+                content: "I'm on it! Drafting personalized emails for the leads. I'll also suggest some Instagram captions for your latest venue photos.",
+                role: 'assistant',
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, aiResponse]);
@@ -91,10 +87,10 @@ export function ChatInterface() {
                         animate={{ opacity: 1, y: 0 }}
                         className={clsx(
                             "flex gap-3 max-w-[80%]",
-                            message.sender === 'user' ? "ml-auto flex-row-reverse" : ""
+                            message.role === 'user' ? "ml-auto flex-row-reverse" : ""
                         )}
                     >
-                        {message.sender === 'ai' && (
+                        {message.role === 'assistant' && (
                             <div className="w-8 h-8 rounded-full bg-[var(--color-primary)]/10 flex-shrink-0 flex items-center justify-center text-[var(--color-primary)]">
                                 <Bot size={16} />
                             </div>
@@ -102,14 +98,14 @@ export function ChatInterface() {
 
                         <div className={clsx(
                             "p-4 rounded-[var(--radius-md)] shadow-sm text-sm leading-relaxed",
-                            message.sender === 'user'
+                            message.role === 'user'
                                 ? "bg-[var(--color-secondary)] text-white font-medium rounded-tr-none"
                                 : "bg-white text-gray-700 rounded-tl-none border border-gray-100"
                         )}>
-                            {message.text}
+                            {message.content}
                             <div className={clsx(
                                 "text-[10px] mt-2 opacity-50",
-                                message.sender === 'user' ? "text-right" : ""
+                                message.role === 'user' ? "text-right" : ""
                             )}>
                                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>

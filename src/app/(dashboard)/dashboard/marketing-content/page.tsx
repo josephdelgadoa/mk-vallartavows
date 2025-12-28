@@ -14,7 +14,8 @@ import {
     Copy,
     Check,
     Lightbulb,
-    UserCircle
+    UserCircle,
+    Image as ImageIcon
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -78,6 +79,12 @@ export default function MarketingContentPage() {
     const [generatedContent, setGeneratedContent] = useState<Record<Platform, string> | null>(null);
     const [generatedPrompt, setGeneratedPrompt] = useState('');
 
+    // Image Generation State
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [aspectRatio, setAspectRatio] = useState<'square' | 'portrait' | 'landscape'>('square');
+    const [resolution, setResolution] = useState<'1k' | '2k' | '8k'>('1k');
+
     // --- Logic ---
     const applyPreset = (preset: 'luxury' | 'viral' | 'villa') => {
         setMode('manual');
@@ -103,29 +110,78 @@ export default function MarketingContentPage() {
         }
     };
 
-    const generateContent = () => {
+    const generateContent = async () => {
         setIsGenerating(true);
-        // Mock Generation Delay
-        setTimeout(() => {
+        setGeneratedContent(null);
+        setGeneratedImage(null); // Reset image on new campaign
+        setGeneratedPrompt('');
+
+        try {
             const serviceLabel = SERVICES.find(s => s.id === selectedService)?.label;
-            const venueName = BRAND_KNOWLEDGE.venues[selectedService as keyof typeof BRAND_KNOWLEDGE.venues] || "our exclusive locations";
 
-            const content: Record<Platform, string> = {
-                facebook: `${featureRobin ? "👋 Hi friends, Robin here!" : "✨ Your Love, Our Passion."} \n\n${featureRobin ? "After 15+ years of planning weddings in Puerto Vallarta, I still get emotional at Terra Noble's sunset view." : "Imagine your perfect day at " + venueName + "."} \n\nWhether it's a ${serviceLabel} or a spiritual union, we handle every detail with ${BRAND_KNOWLEDGE.voice.toLowerCase()}. \n\n🏳️‍🌈 Proud to be LGBTQ+ Friendly Certified!\n\n👇 Start your stress-free journey:\n🇺🇸 USA: +1 (646) 216-8516\n🇲🇽 WA: +52 322-170-3027\n\n#VallartaVows #PuertoVallartaWedding #TerraNoble #BanderasBay #DestinationBride #LoveWins`,
+            const response = await fetch('/api/marketing/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    service: serviceLabel,
+                    audience,
+                    tone,
+                    featureRobin
+                })
+            });
 
-                instagram: `${featureRobin ? "Pov: You trusted me with your big day. 🥂" : "Barefoot luxury. 🌊"} \n\n${venueName} is calling your name. \n\n✨ A La Carte Pricing\n✨ Bilingual Ceremonies\n✨ 15+ Years Experience\n\nLink in Bio to chat! 💍\n\n#VallartaVows #PVWedding #BridalInspo #BeachWedding #Mexico`,
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Generation failed');
+            }
 
-                reels: `🎬 **SCENE 1 (0:00-0:03)**: Drone shot of ${venueName}. Text: "This view..."\n\n🎬 **SCENE 2 (0:03-0:06)**: Close up of custom floral arch. Audio: Acoustic guitar.\n\n🎬 **SCENE 3 (0:06-0:10)**: Couple laughing (candid). Text: "Stress-free thanks to Vallarta Vows."\n\n🎵 **Audio**: "Golden Hour" - JVKE\n\n👇 **Caption**:\nCustom ceremonies, zero stress. Book now!`,
+            const data = await response.json();
 
-                tiktok: `🎥 **Concept**: "Wedding Expectations vs Reality"\n\n**Expectation**: Stressed, running around.\n**Reality**: Sipping champagne on a yacht while we handle it.\n\n**Visual**: Cut to ${venueName} setup perfectly.\n\n**Text Overlay**: "15 Years Experience looks like this."\n\n#WeddingHacks #DestinationWedding #VallartaVows #LGBTQFriendly`,
-
-                youtube: `**Title**: Ultimate Guide to ${serviceLabel} in Puerto Vallarta (2025)\n\n**Script Outline**:\n1. Intro: Why choose Puerto Vallarta?\n2. Venue Spotlight: ${venueName}.\n3. Our LGBTQ+ Friendly Promise.\n4. How our A La Carte pricing saves you money.\n5. Outro: Call Robin today!\n\n**Description**:\nFrom Terra Noble to private villas, we show you the best spots. Contact us for a free quote!`
+            const contentRatio: Record<Platform, string> = {
+                facebook: data.facebook,
+                instagram: data.instagram,
+                reels: data.reels,
+                tiktok: data.tiktok,
+                youtube: data.youtube
             };
 
-            setGeneratedContent(content);
-            setGeneratedPrompt(`Professional photography of ${serviceLabel} at ${venueName}, ${imageProfile}, soft natural lighting, emotional candid moment, 8k resolution, highly detailed.`);
+            setGeneratedContent(contentRatio);
+            setGeneratedPrompt(data.imagePrompt);
+
+        } catch (error: any) {
+            console.error(error);
+            alert(`Generation Error: ${error.message}`);
+        } finally {
             setIsGenerating(false);
-        }, 2000);
+        }
+    };
+
+    const generateImage = async () => {
+        if (!generatedPrompt) return;
+
+        setIsGeneratingImage(true);
+        try {
+            const response = await fetch('/api/marketing/image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: generatedPrompt,
+                    aspectRatio,
+                    resolution
+                })
+            });
+
+            if (!response.ok) throw new Error('Image generation failed');
+
+            const data = await response.json();
+            setGeneratedImage(data.imageUrl);
+
+        } catch (error) {
+            console.error(error);
+            alert("Failed to generate image. Please checking your API key supports DALL-E 3.");
+        } finally {
+            setIsGeneratingImage(false);
+        }
     };
 
     return (
@@ -305,15 +361,82 @@ export default function MarketingContentPage() {
                                         />
                                     </div>
 
-                                    {/* Image Prompt Bridge */}
-                                    <div className="bg-gray-900 p-4 rounded-[var(--radius-md)] text-white space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
-                                                <Sparkles size={12} />
-                                                <span>IMAGE PROMPT (gemini-3-pro-preview)</span>
+                                    {/* Image Prompt Bridge & Generation */}
+                                    {/* Image Prompt Bridge & Generation */}
+                                    <div className="bg-gray-900 p-4 rounded-[var(--radius-md)] text-white space-y-4">
+                                        <div className="flex flex-col gap-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2 text-xs font-medium text-gray-400">
+                                                    <ImageIcon size={12} />
+                                                    <span>IMAGE PROMPT (Imagen 4 Ready)</span>
+                                                </div>
+
+                                                {!generatedImage && (
+                                                    <button
+                                                        onClick={generateImage}
+                                                        disabled={isGeneratingImage || !generatedPrompt}
+                                                        className="text-xs bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white px-3 py-1.5 rounded transition-colors flex items-center gap-2 disabled:opacity-50"
+                                                    >
+                                                        {isGeneratingImage ? <Sparkles size={12} className="animate-spin" /> : <Zap size={12} />}
+                                                        {isGeneratingImage ? 'Generating...' : 'Generate Image'}
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {/* Configuration Controls */}
+                                            <div className="grid grid-cols-2 gap-4 border-t border-gray-800 pt-3">
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Aspect Ratio</label>
+                                                    <div className="flex bg-gray-800 rounded p-1 gap-1">
+                                                        {(['square', 'portrait', 'landscape'] as const).map(ratio => (
+                                                            <button
+                                                                key={ratio}
+                                                                onClick={() => setAspectRatio(ratio)}
+                                                                className={clsx(
+                                                                    "flex-1 text-[10px] py-1 rounded transition-all capitalize",
+                                                                    aspectRatio === ratio ? "bg-gray-600 text-white shadow-sm" : "text-gray-400 hover:text-gray-300"
+                                                                )}
+                                                            >
+                                                                {ratio}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">Resolution</label>
+                                                    <div className="flex bg-gray-800 rounded p-1 gap-1">
+                                                        {(['1k', '2k', '8k'] as const).map(res => (
+                                                            <button
+                                                                key={res}
+                                                                onClick={() => setResolution(res)}
+                                                                className={clsx(
+                                                                    "flex-1 text-[10px] py-1 rounded transition-all uppercase",
+                                                                    resolution === res ? "bg-gray-600 text-white shadow-sm" : "text-gray-400 hover:text-gray-300"
+                                                                )}
+                                                            >
+                                                                {res}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <p className="text-sm text-gray-300 italic">{generatedPrompt}</p>
+
+                                        <p className="text-sm text-gray-300 italic px-2 border-l-2 border-[var(--color-primary)]">"{generatedPrompt}"</p>
+
+                                        {/* Generated Image Display */}
+                                        {generatedImage && (
+                                            <div className="relative mt-4 rounded-lg overflow-hidden border border-gray-700">
+                                                <img
+                                                    src={generatedImage}
+                                                    alt="AI Generated Wedding Concept"
+                                                    className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700"
+                                                />
+                                                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded">
+                                                    Imagen 3 • 8K
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Actions */}
