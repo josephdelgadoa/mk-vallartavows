@@ -68,3 +68,36 @@ The `deploy.sh` script automates the process:
 
 ### "Connection Refused"
 -   Ensure port **8002** is open in your Hostinger Firewall settings.
+
+---
+
+## VPS Terminal Cheat Sheet
+
+If you want to manage the server directly (SSH in), here are the commands you'll use most often.
+
+**1. Log in to your VPS**
+```bash
+ssh root@31.220.75.101
+# Type your password when prompted (it won't show on screen)
+```
+
+**2. Navigate to your app**
+```bash
+cd /var/www/vallartavows
+```
+
+**3. Check Status**
+```bash
+# See running containers
+docker compose ps
+
+# See real-time logs (Press Ctrl+C to exit)
+docker compose logs -f
+```
+
+**4. Manual Restart**
+```bash
+# Pull latest changes and restart
+docker compose down
+docker compose up -d --build
+```
