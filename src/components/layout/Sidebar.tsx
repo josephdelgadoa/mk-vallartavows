@@ -88,6 +88,9 @@ export function Sidebar() {
                     <LogOut size={18} />
                     <span>Sign Out</span>
                 </button>
+                <div className="mt-4 px-3 text-xs text-gray-400 font-mono">
+                    v1.2 (Deployed)
+                </div>
             </div>
         </aside >
     );
