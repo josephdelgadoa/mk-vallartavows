@@ -101,3 +101,38 @@ docker compose logs -f
 docker compose down
 docker compose up -d --build
 ```
+
+---
+
+## Alternative: Pulling from GitHub (Advanced)
+
+If you prefer to **pull** updates directly from GitHub to your VPS (instead of pushing from your computer), follow these steps.
+
+**1. One-Time Setup on VPS**
+You need to turn the folder on your VPS into a Git repository.
+```bash
+# SSH into your VPS
+ssh root@31.220.75.101
+cd /var/www/vallartavows
+
+# Initialize Git
+git init
+git remote add origin https://github.com/josephdelgadoa/mk-vallartavows.git
+git fetch
+git checkout main -f
+git branch --set-upstream-to=origin/main main
+```
+
+**2. To Update via Git Pull**
+In the future, run this on your VPS to update:
+```bash
+# Pull latest code
+git pull
+
+# Rebuild and restart
+docker compose down
+docker compose up -d --build
+```
+
+> [!NOTE]
+> This method requires your `.env.local` file to be present on the server (which it should be if you ran `deploy.sh` once).
