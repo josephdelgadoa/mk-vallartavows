@@ -1,65 +1,70 @@
-# Deploying to Hostinger VPS
+# Hostinger VPS Deployment Guide
 
-This guide will walk you through deploying your `mk-vallartavows` application to a Hostinger VPS.
+This guide details how to deploy and update the `mk-vallartavows` application on your Hostinger VPS.
 
-## Prerequisites
+## Quick Start (Routine Updates)
 
-1.  **Hostinger VPS**: You should have a VPS running a Linux distribution (Ubuntu 20.04/22.04 recommended).
-2.  **SSH Access**: You need the IP address of your VPS and the root password (or a configured SSH key).
-3.  **Local Tools**: Ensure you have `ssh`, `scp`, and `rsync` installed on your Mac (these are usually pre-installed).
+If you have already set up the VPS and just want to deploy new changes:
 
-## Step 1: Initial VPS Setup (First Time Only)
+1.  **Open Terminal** in the project folder.
+2.  **Run the script:**
+    ```bash
+    ./deploy.sh
+    ```
+3.  **Enter Credentials**:
+    -   **User**: `root`
+    -   **IP**: `31.220.75.101` (or your specific VPS IP)
+    -   **Password**: (Enter when prompted)
+4.  **Wait**: The script will sync files, rebuild the Docker container, and restart the app.
 
-If you haven't set up your VPS yet, you might need to install Docker.
+---
+
+## Prerequisites (First Time Setup)
+
+1.  **Hostinger VPS**: Ubuntu 20.04/22.04 recommended.
+2.  **Access Details**: IP Address and Root Password.
+3.  **Local Tools**: `ssh`, `rsync` (Standard on Mac).
+
+## Step 1: Initial VPS Configuration
+
+**You only need to do this ONCE.**
 
 1.  **SSH into your VPS:**
     ```bash
     ssh root@<YOUR_VPS_IP>
     ```
 2.  **Install Docker & Docker Compose:**
-    Run the following commands on your VPS to install Docker:
     ```bash
     apt update
-    apt install -y apt-transport-https ca-certificates curl software-properties-common
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    apt update
-    apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    apt install -y docker.io docker-compose-plugin
     ```
-3.  **Verify Docker:**
+3.  **Verify Installation:**
     ```bash
-    docker --version
     docker compose version
     ```
 
-## Step 2: Deploy the Application
+## Step 2: The Deployment Script
 
-We have a script `deploy.sh` that automates the file transfer and deployment.
+The `deploy.sh` script automates the process:
 
-1.  **Run the deployment script:**
-    From the root of your project (`mk-vallartavows`), run:
-    ```bash
-    ./deploy.sh
-    ```
-2.  **Follow the prompts:**
-    - Enter your VPS User (usually `root`).
-    - Enter your VPS IP Address.
-    - If prompted, enter your VPS password.
-
-## Step 3: Verify Deployment
-
-Once the script finishes:
-
-1.  Open your browser and navigate to:
-    `http://<YOUR_VPS_IP>:8002`
-
-You should see your application running!
+1.  **Syncs Files**: Copies your local project code to the VPS using `rsync`.
+2.  **Builds**: runs `docker compose build` on the VPS.
+3.  **Restarts**: runs `docker compose up -d` to restart the app with new code.
+4.  **Cleans**: Prunes unused images to save space.
 
 ## Troubleshooting
 
--   **Connection Refused?**
-    -   Make sure port `8002` is open in your VPS firewall.
-    -   On Hostinger, check the "Firewall" section in the control panel.
--   **Permission Denied (publickey)?**
-    -   Ensure your SSH key is added to the VPS `~/.ssh/authorized_keys`.
-    -   Or, simply use the root password when prompted.
+### "I don't see my changes!"
+1.  **Browser Cache**: This is the most common reason.
+    -   **Hard Refresh**: `Cmd + Shift + R` (Mac) or `Ctrl + F5` (Windows).
+    -   **Incognito**: Open the URL in an Incognito window.
+2.  **Build Fail**: Did the script show errors during the "Building" phase? Check the terminal output.
+3.  **Server Logs**: SSH into the VPS and check logs:
+    ```bash
+    ssh root@<YOUR_VPS_IP>
+    cd /var/www/vallartavows
+    docker compose logs -f app
+    ```
+
+### "Connection Refused"
+-   Ensure port **8002** is open in your Hostinger Firewall settings.
