@@ -8,6 +8,12 @@ export async function POST(req: Request) {
         const params = await req.json();
 
         // Use shared generation logic
+        // Default to random aesthetic if not provided (for manual tests compatibility)
+        if (!params.aesthetic) {
+            const { AESTHETICS } = await import('@/lib/marketingGenerator');
+            params.aesthetic = AESTHETICS[Math.floor(Math.random() * AESTHETICS.length)];
+        }
+
         const content = await generateMarketingContent(params);
 
         return NextResponse.json(content);

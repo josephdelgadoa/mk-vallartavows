@@ -34,12 +34,19 @@ export async function publishToFacebook(message: string, imageUrl: string): Prom
     let headers: any = { 'Content-Type': 'application/json' };
 
     if (imageUrl) {
-        endpoint = `https://graph.facebook.com/v19.0/${FB_PAGE_ID}/photos`;
+        // STRATEGY: To post to the "Wall" (Feed) with an image, we perform a 2-step process:
+        // 1. Upload the photo to /photos with published=false (to get a media ID).
+        // 2. Post to /feed with object_attachment=photo_id.
+
+        let photoId: string;
+
+        // Step 1: Upload Photo (Unpublished)
+        const uploadUrl = `https://graph.facebook.com/v19.0/${FB_PAGE_ID}/photos`;
 
         if (imageUrl.startsWith('data:image')) {
             const formData = new FormData();
             formData.append('access_token', pageAccessToken);
-            formData.append('message', message);
+            formData.append('published', 'false'); // Important!
 
             const base64Data = imageUrl.split(',')[1];
             const binaryStr = atob(base64Data);
@@ -49,18 +56,37 @@ export async function publishToFacebook(message: string, imageUrl: string): Prom
                 bytes[i] = binaryStr.charCodeAt(i);
             }
             const blob = new Blob([bytes], { type: 'image/png' });
-
             formData.append('source', blob, 'generated-image.png');
 
-            body = formData;
-            headers = {};
+            const uploadRes = await fetch(uploadUrl, { method: 'POST', body: formData });
+            const uploadData = await uploadRes.json();
+            if (!uploadRes.ok) throw new Error(uploadData.error?.message || 'Failed to upload photo to Facebook');
+            photoId = uploadData.id;
+
         } else {
-            body = JSON.stringify({
-                access_token: pageAccessToken,
-                message: message,
-                url: imageUrl
+            // URL-based upload
+            const uploadRes = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    access_token: pageAccessToken,
+                    url: imageUrl,
+                    published: false
+                })
             });
+            const uploadData = await uploadRes.json();
+            if (!uploadRes.ok) throw new Error(uploadData.error?.message || 'Failed to upload photo to Facebook');
+            photoId = uploadData.id;
         }
+
+        // Step 2: Post to Feed
+        endpoint = `https://graph.facebook.com/v19.0/${FB_PAGE_ID}/feed`;
+        body = JSON.stringify({
+            access_token: pageAccessToken,
+            message: message,
+            object_attachment: photoId // Attach the uploaded photo to the status update
+        });
+        headers = { 'Content-Type': 'application/json' };
     }
 
     const response = await fetch(endpoint, {

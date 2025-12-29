@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
-import { generateMarketingContent, SERVICES, AUDIENCES, TONES, MUSIC_OPTIONS } from './marketingGenerator';
+import { generateMarketingContent, SERVICES, AUDIENCES, TONES, MUSIC_OPTIONS, AESTHETICS } from './marketingGenerator';
 import { generateImage } from './imageGenerator';
 import { publishToFacebook, publishToInstagram } from './publisher';
 
@@ -126,21 +126,23 @@ class MarketingScheduler {
             const audience = AUDIENCES[Math.floor(Math.random() * AUDIENCES.length)];
             const tone = TONES[Math.floor(Math.random() * TONES.length)];
             const music = MUSIC_OPTIONS[Math.floor(Math.random() * MUSIC_OPTIONS.length)];
-            const featureRobin = Math.random() > 0.7; // 30% chance to feature Robin
+            const aesthetic = AESTHETICS[Math.floor(Math.random() * AESTHETICS.length)];
+            const featureRobin = Math.random() > 0.5; // 50% chance to feature Robin
 
             // A. Generate Text Content
-            console.log(`[Scheduler] 🤖 Generating Text | Service: ${service}`);
+            console.log(`[Scheduler] 🤖 Generating Text | Service: ${service} | Aesthetic: ${aesthetic}`);
             const content = await generateMarketingContent({
                 service,
                 audience,
                 tone,
+                aesthetic,
                 featureRobin,
                 music
             });
             console.log(`[Scheduler] ✅ Text Generated. Image Prompt preview: ${content.imagePrompt.slice(0, 30)}...`);
 
             // B. Generate Image
-            console.log(`[Scheduler] 🎨 Generating Image (Aspect Ratio: Square for universality)...`);
+            console.log(`[Scheduler] 🎨 Generating Image...`);
             // We use 'square' as a safe default for both FB/IG in auto-mode
             const imageUrl = await generateImage({
                 prompt: content.imagePrompt,

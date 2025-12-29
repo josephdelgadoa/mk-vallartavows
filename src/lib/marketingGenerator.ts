@@ -35,17 +35,29 @@ export const SERVICES = [
 
 export const AUDIENCES = ['Luxury Seekers', 'Budget-Conscious', 'Adventure Enthusiasts', 'Intimate/Elopement', 'LGBTQ+ Couples'];
 export const TONES = ['Romantic & Heartfelt', 'Modern & Chic', 'Elegant & Timeless', 'High-Energy Party', 'Relaxed & Spiritual'];
+export const AESTHETICS = [
+    'Cinematic & Moody (Warm Tones)',
+    'Bright & Airy (Natural Light)',
+    'Vibrant & Colorful (Mexican Fiesta)',
+    'Documentary Style (Candid Black & White)',
+    'Dreamy & Soft (Golden Hour)',
+    'Modern & Minimalist (Clean Lines)',
+    'Luxury Editorial (High Fashion)'
+];
+
 export const MUSIC_OPTIONS = [
     'Mariachi big band 10 plus musicians',
     'Trio 3 people romantic ballad music',
     'Saxophone',
-    'Live Band'
+    'Live Band',
+    '' // Represents "No specific Music"
 ];
 
 export interface GenerationParams {
     service: string;
     audience: string;
     tone: string;
+    aesthetic: string;
     featureRobin: boolean;
     music: string;
 }
@@ -55,7 +67,7 @@ export async function generateMarketingContent(params: GenerationParams) {
         throw new Error('Google API Key not configured');
     }
 
-    const { service, audience, tone, featureRobin, music } = params;
+    const { service, audience, tone, aesthetic, featureRobin, music } = params;
 
     let systemPrompt = `You are a world-class marketing copywriter for "Vallarta Vows", a premier wedding planning agency in Puerto Vallarta, Mexico.
     
@@ -63,10 +75,11 @@ export async function generateMarketingContent(params: GenerationParams) {
     Key Persona: Robin Manoogian (Founder, 15+ years exp).
     Target Audience: ${audience}
     Selected Service: ${service}
+    Visual Aesthetic: ${aesthetic}
     Feature Robin: ${featureRobin ? 'YES - Write in the first person as Robin Manoogian (Founder). Use "I", "my". Share personal insights from 15+ years of experience. Be warm, authoritative, and welcoming.' : 'NO - Write in the "Vallarta Vows" brand voice (we/us). Professional, elegant, and inviting.'}
 
     [MUSIC ATMOSPHERE]
-    ${music ? `The event features live music: "${music}". Explicitly describe how this specific musical choice creates an unforgettable engaging atmosphere (e.g. the romance of a Trio, the high-energy of a 10-piece Mariachi big band).` : 'No specific music selected.'}
+    ${music ? `The event features live music: "${music}". Explicitly describe how this specific musical choice creates an unforgettable engaging atmosphere (e.g. the romance of a Trio, the high-energy of a 10-piece Mariachi big band).` : 'No specific music selected. Focus on the ambient sounds of the ocean or the joy of the guests.'}
 
     [CATERING KNOWLEDGE]
     ${service === 'Catering Menu' ? `Use the following details to describe the culinary experience. be specific about dishes:\n${CATERING_KNOWLEDGE}` : ''}
@@ -81,9 +94,10 @@ export async function generateMarketingContent(params: GenerationParams) {
     3. VIRALITY: MUST include the Top 15 trending wedding/travel hashtags at the end of every post.
     4. FORMATTING: Use DOUBLE SPACING (two newlines) between: The Main Content, The CTA, and The Hashtags.
     5. IMAGE PROMPT: 
-       - If Service is "Catering Menu": "Close-up glossy food photography, 8k, diverse Mexican wedding buffet, vibrant colors, delicious presentation, photorealistic."
-       - If Music is selected: "Wedding reception scene featuring ${music}, cinematic lighting, photorealistic, 8k, joyful atmosphere."
-       - Otherwise: "Professional photo taken with the most expensive camera of the world 2025, 8k, hyper-realistic, ensuring the scene matches the service/venue perfectly."
+       - Style: ${aesthetic}
+       - If Music is selected: "Wedding reception scene featuring ${music}, matching the '${aesthetic}' style, photorealistic, 8k, joyful atmosphere."
+       - If Service is "Catering Menu": "Close-up glossy food photography, 8k, diverse Mexican wedding buffet, vibrant colors, delicious presentation, matching '${aesthetic}' style."
+       - Otherwise: "Professional photo taken with the most expensive camera of the world 2025, 8k, hyper-realistic, ensuring the scene matches the service '${service}' and aligns with the '${aesthetic}' aesthetic perfectly."
 
     Task: Generate marketing content for 5 platforms + 1 image prompt.
     Return JSON ONLY. No markdown formatting.
