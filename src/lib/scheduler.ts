@@ -2,6 +2,8 @@ import cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
 import { generateMarketingContent, SERVICES, AUDIENCES, TONES, MUSIC_OPTIONS } from './marketingGenerator';
+import { generateImage } from './imageGenerator';
+import { publishToFacebook, publishToInstagram } from './publisher';
 
 // --- Types ---
 interface ScheduledJob {
@@ -117,7 +119,7 @@ class MarketingScheduler {
         if (!this.isActive) return;
 
         try {
-            console.log("[Scheduler] 🎲 rolling dice for random content...");
+            console.log(`[Scheduler] 🎲 [${new Date().toISOString()}] Rolling dice for random content...`);
 
             // Random Selection
             const service = SERVICES[Math.floor(Math.random() * SERVICES.length)];
@@ -126,8 +128,8 @@ class MarketingScheduler {
             const music = MUSIC_OPTIONS[Math.floor(Math.random() * MUSIC_OPTIONS.length)];
             const featureRobin = Math.random() > 0.7; // 30% chance to feature Robin
 
-            console.log(`[Scheduler] 🤖 Generating Content | Service: ${service} | Music: ${music}`);
-
+            // A. Generate Text Content
+            console.log(`[Scheduler] 🤖 Generating Text | Service: ${service}`);
             const content = await generateMarketingContent({
                 service,
                 audience,
@@ -135,16 +137,31 @@ class MarketingScheduler {
                 featureRobin,
                 music
             });
+            console.log(`[Scheduler] ✅ Text Generated. Image Prompt preview: ${content.imagePrompt.slice(0, 30)}...`);
 
-            console.log(`[Scheduler] ✅ Generated Content [${new Date().toISOString()}]`);
-            console.log(`[Scheduler] FB Preview: ${content.facebook.slice(0, 50)}...`);
+            // B. Generate Image
+            console.log(`[Scheduler] 🎨 Generating Image (Aspect Ratio: Square for universality)...`);
+            // We use 'square' as a safe default for both FB/IG in auto-mode
+            const imageUrl = await generateImage({
+                prompt: content.imagePrompt,
+                aspectRatio: 'square',
+                resolution: '1k'
+            });
+            console.log(`[Scheduler] ✅ Image Generated.`);
 
-            // TODO: PUBLISH (Phase 2B)
-            // await publishToFacebook(content.facebook, imageUrl);
-            // await publishToInstagram(content.instagram, imageUrl);
+            // C. Publish to Facebook
+            console.log(`[Scheduler] 🚀 Publishing to Facebook...`);
+            const fbPostId = await publishToFacebook(content.facebook, imageUrl);
+            console.log(`[Scheduler] ✅ Facebook Post Success: ${fbPostId}`);
+
+            // D. Publish to Instagram
+            console.log(`[Scheduler] 📸 Publishing to Instagram...`);
+            // IG requires a caption. We use 'instagram' field from content.
+            const igPostId = await publishToInstagram(content.instagram, imageUrl);
+            console.log(`[Scheduler] ✅ Instagram Post Success: ${igPostId}`);
 
             // TODO: DRIVE ARCHIVE (Phase 2C - Missing Credentials)
-            // await uploadToDrive(content);
+            // await uploadToDrive(content, imageUrl);
 
             const state = loadState();
             saveState({ ...state, lastRun: new Date().toISOString() });
