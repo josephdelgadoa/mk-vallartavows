@@ -64,7 +64,22 @@ export async function POST(req: Request) {
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!rawText) throw new Error('No content generated');
 
-        const content = JSON.parse(rawText);
+        // Robust JSON Extraction: Handle Markdown code blocks (```json ... ```)
+        let cleanText = rawText.trim();
+        // Remove markdown code blocks if present
+        if (cleanText.startsWith('```')) {
+            cleanText = cleanText.replace(/^```(json)?/, '').replace(/```$/, '').trim();
+        }
+
+        // Find the first '{' and last '}' to handle potential preamble/postamble text
+        const firstBrace = cleanText.indexOf('{');
+        const lastBrace = cleanText.lastIndexOf('}');
+
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            cleanText = cleanText.substring(firstBrace, lastBrace + 1);
+        }
+
+        const content = JSON.parse(cleanText);
 
         return NextResponse.json(content);
 
