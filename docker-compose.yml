@@ -9,7 +9,7 @@ services:
       - "8002:3000"
     environment:
       - NODE_ENV=production
-      - TZ=America/New_York
+      - TZ=America/Mexico_City
     env_file:
       - .env.local
       - .env
