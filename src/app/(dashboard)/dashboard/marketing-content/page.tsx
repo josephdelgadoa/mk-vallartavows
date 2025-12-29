@@ -188,24 +188,35 @@ export default function MarketingContentPage() {
     const publishContent = async () => {
         if (!generatedContent || !generatedContent[activePlatform]) return;
 
-        if (activePlatform !== 'facebook') {
-            alert("Direct publishing is currently only available for Facebook.");
+        if (activePlatform !== 'facebook' && activePlatform !== 'instagram') {
+            alert(`Direct publishing is currently only available for Facebook & Instagram.`);
             return;
         }
 
-        const confirm = window.confirm(`Are you sure you want to publish this to the Vallarta Vows Facebook Page?`);
+        const confirm = window.confirm(`Are you sure you want to publish this to ${activePlatform === 'facebook' ? 'Facebook' : 'Instagram'}?`);
         if (!confirm) return;
 
-        setIsGenerating(true); // Re-use loading state to prevent double-click
+        setIsGenerating(true);
 
         try {
-            const response = await fetch('/api/marketing/publish/facebook', {
+            let endpoint = '/api/marketing/publish/facebook';
+            let body: any = {
+                message: generatedContent[activePlatform],
+                imageUrl: generatedImage
+            };
+
+            if (activePlatform === 'instagram') {
+                endpoint = '/api/marketing/publish/instagram';
+                body = {
+                    caption: generatedContent[activePlatform],
+                    imageUrl: generatedImage
+                };
+            }
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: generatedContent[activePlatform],
-                    imageUrl: generatedImage // Send image if available
-                })
+                body: JSON.stringify(body)
             });
 
             const data = await response.json();
@@ -214,7 +225,7 @@ export default function MarketingContentPage() {
                 throw new Error(data.error || 'Publishing failed');
             }
 
-            alert(`✅ Successfully Published to Facebook!\nPost ID: ${data.postId}`);
+            alert(`✅ Successfully Published to ${activePlatform === 'facebook' ? 'Facebook' : 'Instagram'}!\nPost ID: ${data.postId}`);
 
         } catch (error: any) {
             console.error(error);
