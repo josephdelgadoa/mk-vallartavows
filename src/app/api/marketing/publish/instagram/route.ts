@@ -127,6 +127,30 @@ export async function POST(req: Request) {
 
         const creationId = containerData.id;
 
+        // 2.5 Wait for Media Container Readiness (Polling)
+        let attempts = 0;
+        let isReady = false;
+
+        while (attempts < 10 && !isReady) {
+            attempts++;
+            // Check status
+            const statusRes = await fetch(`https://graph.facebook.com/v19.0/${creationId}?fields=status_code&access_token=${pageAccessToken}`);
+            const statusData = await statusRes.json();
+
+            if (statusData.status_code === 'FINISHED') {
+                isReady = true;
+            } else if (statusData.status_code === 'ERROR') {
+                throw new Error('Instagram Media Processing Failed');
+            } else {
+                // Wait 3 seconds before next check
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+        }
+
+        if (!isReady) {
+            throw new Error('Timeout waiting for Instagram Media to process.');
+        }
+
         // 3. Publish Media Container
         const publishUrl = `https://graph.facebook.com/v19.0/${IG_USER_ID}/media_publish`;
         const publishRes = await fetch(publishUrl, {
