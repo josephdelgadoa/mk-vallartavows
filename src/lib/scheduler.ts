@@ -19,7 +19,7 @@ interface ScheduleState {
 }
 
 // --- Constants ---
-const STATE_FILE_PATH = path.join(process.cwd(), 'schedule-state.json');
+const STATE_FILE_PATH = path.join('/tmp', 'schedule-state.json');
 
 // --- State Management ---
 function loadState(): ScheduleState {
