@@ -51,6 +51,15 @@ const SERVICES = [
     { id: 'church', label: 'Catholic Church Wedding', desc: 'Sacred union in a historic church.' },
     { id: 'renewal', label: 'Vow Renewal', desc: 'Reaffirming love with champagne.' },
     { id: 'elopement', label: 'Intimate Elopement', desc: 'Just the two of you + Concierge.' },
+    { id: 'catering', label: 'Catering Menu', desc: 'Authentic Mexican flavors & on-site chefs.' },
+    { id: 'picnic', label: 'Beach Picnic Wedding', desc: 'Relaxed, bohemian vibes on the sand.' },
+];
+
+const MUSIC_OPTIONS = [
+    'Mariachi big band 10 plus musicians',
+    'Trio 3 people romantic ballad music',
+    'Saxophone',
+    'Live Band'
 ];
 
 const AUDIENCES = ['Luxury Seekers', 'Budget-Conscious', 'Adventure Enthusiasts', 'Intimate/Elopement', 'LGBTQ+ Couples'];
@@ -73,6 +82,7 @@ export default function MarketingContentPage() {
     const [tone, setTone] = useState(TONES[0]);
     const [imageProfile, setImageProfile] = useState(IMAGE_PROFILES[0]);
     const [featureRobin, setFeatureRobin] = useState(false);
+    const [music, setMusic] = useState(MUSIC_OPTIONS[0]);
     const [activePlatform, setActivePlatform] = useState<Platform>('facebook');
 
     const [isGenerating, setIsGenerating] = useState(false);
@@ -126,7 +136,8 @@ export default function MarketingContentPage() {
                     service: serviceLabel,
                     audience,
                     tone,
-                    featureRobin
+                    featureRobin,
+                    music
                 })
             });
 
@@ -310,6 +321,19 @@ export default function MarketingContentPage() {
                                         className="w-full p-3 bg-gray-50 border border-gray-200 rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 text-[var(--color-text-main)] text-sm"
                                     >
                                         {AUDIENCES.map(a => <option key={a} value={a}>{a}</option>)}
+                                    </select>
+                                </div>
+
+                                {/* Music Selector */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-[var(--color-text-muted)]">Musical Atmosphere</label>
+                                    <select
+                                        value={music}
+                                        onChange={(e) => setMusic(e.target.value)}
+                                        className="w-full p-3 bg-gray-50 border border-gray-200 rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 text-[var(--color-text-main)]"
+                                    >
+                                        <option value="">No Specific Music</option>
+                                        {MUSIC_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
