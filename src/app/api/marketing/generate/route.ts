@@ -110,8 +110,9 @@ export async function POST(req: Request) {
 
         // Fix common JSON issues from LLMs
         cleanText = cleanText
-            .replace(/\\'/g, "'") // Replace \' with ' (valid in JS, invalid in JSON)
-            .replace(/\\"/g, '\\"'); // Ensure quotes are escaped (preserve existing escapes)
+            .replace(/\\'/g, "'") // Replace \' with '
+            .replace(/\\"/g, '\\"') // Ensure quotes are escaped
+            .replace(/\\([^"\\/bfnrtu])/g, "$1"); // <--- HEAL INVALID ESCAPES: Remove \ from anything not standard
 
         // Remove Non-printable characters (control characters)
         cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
