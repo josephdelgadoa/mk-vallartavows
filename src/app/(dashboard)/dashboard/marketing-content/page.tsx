@@ -184,6 +184,46 @@ export default function MarketingContentPage() {
         }
     };
 
+    // --- Publishing Logic ---
+    const publishContent = async () => {
+        if (!generatedContent || !generatedContent[activePlatform]) return;
+
+        if (activePlatform !== 'facebook') {
+            alert("Direct publishing is currently only available for Facebook.");
+            return;
+        }
+
+        const confirm = window.confirm(`Are you sure you want to publish this to the Vallarta Vows Facebook Page?`);
+        if (!confirm) return;
+
+        setIsGenerating(true); // Re-use loading state to prevent double-click
+
+        try {
+            const response = await fetch('/api/marketing/publish/facebook', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: generatedContent[activePlatform],
+                    imageUrl: generatedImage // Send image if available
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Publishing failed');
+            }
+
+            alert(`✅ Successfully Published to Facebook!\nPost ID: ${data.postId}`);
+
+        } catch (error: any) {
+            console.error(error);
+            alert(`❌ Publish Failed: ${error.message}`);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     return (
         <div className="max-w-6xl mx-auto space-y-8 pb-12">
             {/* Header */}
@@ -362,7 +402,6 @@ export default function MarketingContentPage() {
                                     </div>
 
                                     {/* Image Prompt Bridge & Generation */}
-                                    {/* Image Prompt Bridge & Generation */}
                                     <div className="bg-gray-900 p-4 rounded-[var(--radius-md)] text-white space-y-4">
                                         <div className="flex flex-col gap-4">
                                             <div className="flex items-center justify-between">
@@ -441,8 +480,12 @@ export default function MarketingContentPage() {
 
                                     {/* Actions */}
                                     <div className="flex gap-4 pt-4 border-t border-gray-100">
-                                        <button className="flex-1 py-3 bg-[var(--color-primary)] text-white font-bold rounded-[var(--radius-md)] hover:bg-[var(--color-primary-light)] transition-all shadow-md">
-                                            Publish to {PLATFORMS.find(p => p.id === activePlatform)?.label}
+                                        <button
+                                            onClick={publishContent}
+                                            disabled={isGenerating}
+                                            className="flex-1 py-3 bg-[var(--color-primary)] text-white font-bold rounded-[var(--radius-md)] hover:bg-[var(--color-primary-light)] transition-all shadow-md disabled:opacity-70"
+                                        >
+                                            {isGenerating ? 'Publishing...' : `Publish to ${PLATFORMS.find(p => p.id === activePlatform)?.label}`}
                                         </button>
                                         <button className="px-6 py-3 border border-gray-200 font-medium rounded-[var(--radius-md)] hover:bg-gray-50 transition-all text-gray-600">
                                             Save Draft
