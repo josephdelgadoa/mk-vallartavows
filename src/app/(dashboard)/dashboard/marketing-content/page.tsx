@@ -95,6 +95,39 @@ export default function MarketingContentPage() {
     const [aspectRatio, setAspectRatio] = useState<'square' | 'portrait' | 'landscape'>('square');
     const [resolution, setResolution] = useState<'1k' | '2k' | '8k'>('1k');
 
+    // --- Scheduler State ---
+    const [schedulerStatus, setSchedulerStatus] = useState<'active' | 'stopped'>('stopped');
+
+    useEffect(() => {
+        if (mode === 'schedule') {
+            fetch('/api/marketing/schedule', { method: 'POST', body: JSON.stringify({ action: 'status' }) })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) setSchedulerStatus(data.status);
+                })
+                .catch(err => console.error("Failed to fetch scheduler status", err));
+        }
+    }, [mode]);
+
+    const toggleScheduler = async () => {
+        const action = schedulerStatus === 'active' ? 'stop' : 'start';
+        try {
+            const res = await fetch('/api/marketing/schedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSchedulerStatus(data.status);
+                // alert(data.message); // Optional: less intrusive to just update UI
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to toggle scheduler");
+        }
+    };
+
     // --- Logic ---
     const applyPreset = (preset: 'luxury' | 'viral' | 'villa') => {
         setMode('manual');
@@ -552,12 +585,39 @@ export default function MarketingContentPage() {
             )}
 
             {mode === 'schedule' && (
-                <div className="bg-white p-12 rounded-[var(--radius-lg)] text-center shadow-sm border border-gray-100">
-                    <Calendar size={64} className="mx-auto text-gray-300 mb-6" />
-                    <h2 className="text-2xl font-bold text-gray-400 mb-4">Calendar View Coming Soon</h2>
-                    <p className="text-gray-400 max-w-md mx-auto">
-                        Drag-and-drop scheduling functionality will be available in the next update.
-                    </p>
+                <div className="bg-white p-12 rounded-[var(--radius-lg)] text-center shadow-sm border border-gray-100 space-y-6">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="bg-blue-50 p-4 rounded-full">
+                            <Calendar size={48} className="text-blue-500" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-[var(--color-primary)]">Daily Auto-Scheduler</h2>
+                        <p className="text-[var(--color-text-muted)] max-w-md mx-auto">
+                            Automatically generate and publish content 9 times a day (8am - 4pm).
+                        </p>
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 max-w-lg mx-auto text-left space-y-4">
+                        <h4 className="font-bold text-gray-700 flex items-center gap-2">
+                            <Zap size={16} className="text-yellow-500" /> Schedule Status
+                        </h4>
+                        <div className="flex items-center justify-between bg-white p-4 rounded border border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <span className={clsx("w-3 h-3 rounded-full animate-pulse", schedulerStatus === 'active' ? "bg-green-500" : "bg-red-500")}></span>
+                                <span className="font-mono text-sm text-gray-600">Status: {schedulerStatus === 'active' ? 'Running' : 'Stopped'}</span>
+                            </div>
+                            <button
+                                onClick={toggleScheduler}
+                                className={clsx("px-4 py-2 rounded text-sm transition text-white", schedulerStatus === 'active' ? "bg-red-500 hover:bg-red-600" : "bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]")}
+                            >
+                                {schedulerStatus === 'active' ? 'Stop Auto-Pilot' : 'Activate Auto-Pilot'}
+                            </button>
+                        </div>
+                        <div className="text-xs text-gray-400 space-y-1">
+                            <p>• 9 Daily Slots: 8am, 9am, 10am ... 4pm</p>
+                            <p>• Random Service Selection</p>
+                            <p>• Google Drive Archive: Disabled (Missing Credentials)</p>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
