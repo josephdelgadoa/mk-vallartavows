@@ -6,6 +6,25 @@ export const runtime = 'edge';
 const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 const FB_PAGE_ID = process.env.FB_PAGE_ID;
 
+// Helper to get Page Access Token if the provided one is a User Token
+async function getPageAccessToken(userToken: string, pageId: string): Promise<string> {
+    try {
+        // Request the Page's access token specifically
+        const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=access_token&access_token=${userToken}`);
+        const data = await response.json();
+
+        if (data.access_token) {
+            console.log('Successfully exchanged User Token for Page Token');
+            return data.access_token;
+        }
+        console.warn('Could not exchange token, using provided token as-is.');
+        return userToken;
+    } catch (e) {
+        console.error('Token exchange failed:', e);
+        return userToken;
+    }
+}
+
 export async function POST(req: Request) {
     if (!FB_PAGE_ACCESS_TOKEN || !FB_PAGE_ID) {
         return NextResponse.json(
@@ -21,19 +40,18 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Message content is required.' }, { status: 400 });
         }
 
-        // Determine if we are posting an image or just text
-        // Note: Graph API requires multipart/form-data for direct file uploads (source)
-        // or a public URL for proper 'url' parameter usage. 
-        // Generative AI often returns base64, so we must handle that.
+        // 1. GET PAGE TOKEN (Crucial step to avoid "publish_actions" user-posting error)
+        // We use the env token (likely a User Admin Token) to fetch the actual Page Token
+        const pageAccessToken = await getPageAccessToken(FB_PAGE_ACCESS_TOKEN, FB_PAGE_ID);
 
+        // 2. Determine endpoint and Prepare Body
         const isImagePost = !!imageUrl;
         let endpoint = `https://graph.facebook.com/v19.0/${FB_PAGE_ID}/feed`;
         const method = 'POST';
 
         // Prepare body (default JSON)
-        // If uploading binary, we switch to FormData
         let body: any = JSON.stringify({
-            access_token: FB_PAGE_ACCESS_TOKEN,
+            access_token: pageAccessToken, // Use the proper Page Token
             message: message
         });
         let headers: any = { 'Content-Type': 'application/json' };
@@ -45,7 +63,7 @@ export async function POST(req: Request) {
             if (imageUrl.startsWith('data:image')) {
                 // Convert Base64 to Blob for FormData upload
                 const formData = new FormData();
-                formData.append('access_token', FB_PAGE_ACCESS_TOKEN);
+                formData.append('access_token', pageAccessToken); // Use the proper Page Token
                 formData.append('message', message);
 
                 // Extract base64 functionality
@@ -65,7 +83,7 @@ export async function POST(req: Request) {
             } else {
                 // Public URL
                 body = JSON.stringify({
-                    access_token: FB_PAGE_ACCESS_TOKEN,
+                    access_token: pageAccessToken,
                     message: message,
                     url: imageUrl
                 });
@@ -88,7 +106,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
             success: true,
             postId: data.id,
-            postUrl: `https://facebook.com/${data.id}` // Approximation, strict URL depends on post type
+            postUrl: `https://facebook.com/${data.id}`
         });
 
     } catch (error: any) {
