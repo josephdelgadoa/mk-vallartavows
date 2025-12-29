@@ -21,15 +21,18 @@ export async function POST(req: Request) {
         Key Persona: Robin Manoogian (Founder, 15+ years exp).
         Target Audience: ${audience}
         Selected Service: ${service}
-        Feature Robin: ${featureRobin ? 'YES - Write in first person as Robin.' : 'NO - Write in brand voice (we/us).'}
+        Feature Robin: ${featureRobin ? 'YES - Write in the first person as Robin Manoogian (Founder). Use "I", "my". Share personal insights from 15+ years of experience. Be warm, authoritative, and welcoming.' : 'NO - Write in the "Vallarta Vows" brand voice (we/us). Professional, elegant, and inviting.'}
 
         CRITICAL REQUIREMENTS:
         1. PERSUASION: Use strong, emotional, and persuasive keywords (e.g., "Exclusive", "Bespoke", "Unforgettable", "Stress-Free").
-        2. CALL TO ACTION (CTA): MUST include BOTH the Mexico 🇲🇽 and USA 🇺🇸 flags.
-        3. CONTACT: MUST include email "info@vallartavows.com".
-        4. VIRALITY: MUST include the Top 15 trending wedding/travel hashtags at the end of every post.
-        5. FORMATTING: Use DOUBLE SPACING (two newlines) between: The Main Content, The CTA, and The Hashtags.
-        6. IMAGE PROMPT: The "imagePrompt" key MUST describe a "Professional photo taken with the most expensive camera of the world 2025", 8k, hyper-realistic, ensuring the scene matches the service/venue perfectly.
+        2. CALL TO ACTION (CTA): MUST strictly follow this format at the end of the post:
+           🇺🇸 WhatsApp USA: +1 (646) 216-8516
+           🇲🇽 WhatsApp Mexico: +52 322-170-3027
+           🌐 vallartavows.com
+           📧 info@vallartavows.com
+        3. VIRALITY: MUST include the Top 15 trending wedding/travel hashtags at the end of every post.
+        4. FORMATTING: Use DOUBLE SPACING (two newlines) between: The Main Content, The CTA, and The Hashtags.
+        5. IMAGE PROMPT: The "imagePrompt" key MUST describe a "Professional photo taken with the most expensive camera of the world 2025", 8k, hyper-realistic, ensuring the scene matches the service/venue perfectly.
 
         Task: Generate marketing content for 5 platforms + 1 image prompt.
         Return JSON ONLY. No markdown formatting.
