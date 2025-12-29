@@ -30,34 +30,58 @@ export async function POST(req: Request) {
 
         let publicImageUrl = imageUrl;
 
-        // 1. Handle Base64 Image (Required for Instagram API)
-        // Instagram requires a PUBLIC INTERNET URL for the "image_url" parameter.
-        // It does not support multipart/form-data upload for the basic Media endpoint easily in this flow.
+        // 1. Handle Base64 Image (Workaround: Upload to FB unpublished to get a public HTTPS URL)
+        // Instagram requires a generic public URL. Hosting locally on HTTP IP often fails.
+        // We leverage the FB Graph API to host it for us.
         if (imageUrl.startsWith('data:image')) {
             try {
-                // Ensure temp directory exists
-                const tempDir = path.join(process.cwd(), 'public', 'temp');
-                if (!fs.existsSync(tempDir)) {
-                    fs.mkdirSync(tempDir, { recursive: true });
+                // Convert Base64 to Blob
+                const formData = new FormData();
+                formData.append('access_token', FB_PAGE_ACCESS_TOKEN);
+                formData.append('published', 'false'); // Don't show on Feed yet, just host it
+                if (caption) formData.append('message', caption); // Optional metadata
+
+                const base64Data = imageUrl.split(',')[1];
+                const binaryStr = atob(base64Data);
+                const len = binaryStr.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryStr.charCodeAt(i);
+                }
+                const blob = new Blob([bytes], { type: 'image/png' });
+                formData.append('source', blob, 'ig-temp.png');
+
+                // Upload to FB Photos
+                const fbUploadUrl = `https://graph.facebook.com/v19.0/${process.env.FB_PAGE_ID}/photos`;
+                const uploadRes = await fetch(fbUploadUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const uploadData = await uploadRes.json();
+                if (!uploadRes.ok) {
+                    console.error('FB Intermediate Upload Error:', uploadData);
+                    throw new Error('Failed to upload image to Facebook (for hosting).');
                 }
 
-                // Generate unique filename
-                const uniqueId = crypto.randomUUID();
-                const filename = `${uniqueId}.png`;
-                const filePath = path.join(tempDir, filename);
+                const photoId = uploadData.id;
 
-                // Decode and Write
-                const base64Data = imageUrl.split(',')[1];
-                const buffer = Buffer.from(base64Data, 'base64');
-                fs.writeFileSync(filePath, buffer);
+                // Get the 'source' (public HTTPS URL) of the uploaded photo
+                // We need fields=webp_images or images to get the High Res version
+                const urlRes = await fetch(`https://graph.facebook.com/v19.0/${photoId}?fields=images&access_token=${FB_PAGE_ACCESS_TOKEN}`);
+                const urlData = await urlRes.json();
 
-                // Construct Public URL
-                publicImageUrl = `${PUBLIC_BASE_URL}/temp/${filename}`;
-                console.log('Saved temp image for Instagram:', publicImageUrl);
+                // Get the largest image
+                if (urlData.images && urlData.images.length > 0) {
+                    publicImageUrl = urlData.images[0].source;
+                    console.log('Obtained secure HTTPS URL from FB:', publicImageUrl);
+                } else {
+                    throw new Error('Could not retrieve image URL from Facebook.');
+                }
 
-            } catch (fsError: any) {
-                console.error('Filesystem Error:', fsError);
-                return NextResponse.json({ error: 'Failed to process image file on server.' }, { status: 500 });
+            } catch (uploadError: any) {
+                console.error('Image Hosting Error:', uploadError);
+                return NextResponse.json({ error: 'Failed to process image for Instagram.' }, { status: 500 });
             }
         }
 
