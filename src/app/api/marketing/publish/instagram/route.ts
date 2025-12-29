@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
@@ -8,15 +7,33 @@ import path from 'path';
 
 const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 const IG_USER_ID = process.env.IG_USER_ID;
+const FB_PAGE_ID = process.env.FB_PAGE_ID;
 
 // Define public URL base - change this to your production URL
 // In Docker/Hostinger, this is the public IP or domain
 const PUBLIC_BASE_URL = 'http://72.62.162.228:8002';
 
+// Helper to get Page Access Token if the provided one is a User Token
+async function getPageAccessToken(userToken: string, pageId: string): Promise<string> {
+    try {
+        const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=access_token&access_token=${userToken}`);
+        const data = await response.json();
+
+        if (data.access_token) {
+            console.log('Successfully exchanged User Token for Page Token (IG Route)');
+            return data.access_token;
+        }
+        return userToken;
+    } catch (e) {
+        console.error('Token exchange failed:', e);
+        return userToken;
+    }
+}
+
 export async function POST(req: Request) {
-    if (!FB_PAGE_ACCESS_TOKEN || !IG_USER_ID) {
+    if (!FB_PAGE_ACCESS_TOKEN || !IG_USER_ID || !FB_PAGE_ID) {
         return NextResponse.json(
-            { error: 'Instagram credentials not configured (IG_USER_ID, FB_PAGE_ACCESS_TOKEN).' },
+            { error: 'Credentials not configured (IG_USER_ID, FB_PAGE_ACCESS_TOKEN, FB_PAGE_ID).' },
             { status: 500 }
         );
     }
@@ -28,6 +45,10 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Image URL/Data is required for Instagram.' }, { status: 400 });
         }
 
+        // Exchange Token FIRST
+        // We need the Page Token to upload 'unpublished' photos to the Page
+        const pageAccessToken = await getPageAccessToken(FB_PAGE_ACCESS_TOKEN, FB_PAGE_ID);
+
         let publicImageUrl = imageUrl;
 
         // 1. Handle Base64 Image (Workaround: Upload to FB unpublished to get a public HTTPS URL)
@@ -37,7 +58,7 @@ export async function POST(req: Request) {
             try {
                 // Convert Base64 to Blob
                 const formData = new FormData();
-                formData.append('access_token', FB_PAGE_ACCESS_TOKEN);
+                formData.append('access_token', pageAccessToken); // Use PAGE Token
                 formData.append('published', 'false'); // Don't show on Feed yet, just host it
                 if (caption) formData.append('message', caption); // Optional metadata
 
@@ -52,7 +73,7 @@ export async function POST(req: Request) {
                 formData.append('source', blob, 'ig-temp.png');
 
                 // Upload to FB Photos
-                const fbUploadUrl = `https://graph.facebook.com/v19.0/${process.env.FB_PAGE_ID}/photos`;
+                const fbUploadUrl = `https://graph.facebook.com/v19.0/${FB_PAGE_ID}/photos`;
                 const uploadRes = await fetch(fbUploadUrl, {
                     method: 'POST',
                     body: formData
@@ -68,7 +89,7 @@ export async function POST(req: Request) {
 
                 // Get the 'source' (public HTTPS URL) of the uploaded photo
                 // We need fields=webp_images or images to get the High Res version
-                const urlRes = await fetch(`https://graph.facebook.com/v19.0/${photoId}?fields=images&access_token=${FB_PAGE_ACCESS_TOKEN}`);
+                const urlRes = await fetch(`https://graph.facebook.com/v19.0/${photoId}?fields=images&access_token=${pageAccessToken}`);
                 const urlData = await urlRes.json();
 
                 // Get the largest image
@@ -93,7 +114,7 @@ export async function POST(req: Request) {
             body: JSON.stringify({
                 image_url: publicImageUrl,
                 caption: caption,
-                access_token: FB_PAGE_ACCESS_TOKEN // User Token with IG permissions works here
+                access_token: pageAccessToken // Use Page Token here too to be consistent
             })
         });
 
@@ -113,7 +134,7 @@ export async function POST(req: Request) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 creation_id: creationId,
-                access_token: FB_PAGE_ACCESS_TOKEN
+                access_token: pageAccessToken
             })
         });
 
@@ -124,15 +145,9 @@ export async function POST(req: Request) {
             throw new Error(publishData.error?.message || 'Failed to publish IG Media');
         }
 
-        // Optional: Cleanup temp file (async, don't wait)
-        // setTimeout(() => {
-        //    try { fs.unlinkSync(filePath); } catch (e) {}
-        // }, 60000);
-
         return NextResponse.json({
             success: true,
             postId: publishData.id
-            // IG doesn't give a direct permalink easily in response, but valid ID confirms post
         });
 
     } catch (error: any) {
