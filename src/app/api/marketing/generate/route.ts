@@ -111,14 +111,7 @@ export async function POST(req: Request) {
         // Fix common JSON issues from LLMs
         cleanText = cleanText
             .replace(/\\'/g, "'") // Replace \' with ' (valid in JS, invalid in JSON)
-            .replace(/\\"/g, '\\"') // Ensure quotes are escaped (preserve existing escapes)
-            .replace(/[\n\r\t]/g, (match: string) => {
-                // Preserve valid newlines/tabs in values if they are already escaped, 
-                // but literal newlines in JSON strings are invalid.
-                // This is a simplified safe-guard. 
-                const escapes: Record<string, string> = { '\n': '\\n', '\r': '\\r', '\t': '\\t' };
-                return escapes[match];
-            });
+            .replace(/\\"/g, '\\"'); // Ensure quotes are escaped (preserve existing escapes)
 
         // Remove Non-printable characters (control characters)
         cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
