@@ -24,8 +24,10 @@ export async function POST(req: Request) {
 
         // Enhance Prompt based on "Resolution" setting
         let finalPrompt = prompt;
-        if (resolution === '2k' || resolution === '8k') {
-            finalPrompt = `${prompt}, 8k resolution, highly detailed, sharp focus, hyper-realistic`;
+        if (resolution === '2k') {
+            finalPrompt = `${prompt}, 4k resolution, detailed, professional photography`;
+        } else if (resolution === '8k') {
+            finalPrompt = `${prompt}, 8k resolution, highly detailed, sharp focus, hyper-realistic, masterpiece, best quality`;
         }
 
         // Call Imagen 4 Model via Google Generative AI REST API (Predict)
