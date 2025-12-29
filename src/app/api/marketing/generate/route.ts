@@ -97,20 +97,31 @@ export async function POST(req: Request) {
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!rawText) throw new Error('No content generated');
 
-        // Robust JSON Extraction: Handle Markdown code blocks (```json ... ```)
-        let cleanText = rawText.trim();
-        // Remove markdown code blocks if present
-        if (cleanText.startsWith('```')) {
-            cleanText = cleanText.replace(/^```(json)?/, '').replace(/```$/, '').trim();
-        }
+        // Robust JSON Extraction & Cleaning
+        let cleanText = rawText.replace(/```json\s*|\s*```/g, '').trim();
 
-        // Find the first '{' and last '}' to handle potential preamble/postamble text
+        // Find the first '{' and last '}'
         const firstBrace = cleanText.indexOf('{');
         const lastBrace = cleanText.lastIndexOf('}');
 
         if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
             cleanText = cleanText.substring(firstBrace, lastBrace + 1);
         }
+
+        // Fix common JSON issues from LLMs
+        cleanText = cleanText
+            .replace(/\\'/g, "'") // Replace \' with ' (valid in JS, invalid in JSON)
+            .replace(/\\"/g, '\\"') // Ensure quotes are escaped (preserve existing escapes)
+            .replace(/[\n\r\t]/g, (match: string) => {
+                // Preserve valid newlines/tabs in values if they are already escaped, 
+                // but literal newlines in JSON strings are invalid.
+                // This is a simplified safe-guard. 
+                const escapes: Record<string, string> = { '\n': '\\n', '\r': '\\r', '\t': '\\t' };
+                return escapes[match];
+            });
+
+        // Remove Non-printable characters (control characters)
+        cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
 
         const content = JSON.parse(cleanText);
 
