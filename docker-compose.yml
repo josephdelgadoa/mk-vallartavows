@@ -11,5 +11,5 @@ services:
       - NODE_ENV=production
       - TZ=America/Mexico_City
     env_file:
-      - .env.local
       - .env
+      - .env.local
