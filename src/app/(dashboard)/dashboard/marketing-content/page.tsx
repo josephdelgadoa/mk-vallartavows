@@ -109,13 +109,13 @@ export default function MarketingContentPage() {
         }
     }, [mode]);
 
-    const toggleScheduler = async () => {
+    const toggleScheduler = async (mode: 'standard' | 'test' = 'standard') => {
         const action = schedulerStatus === 'active' ? 'stop' : 'start';
         try {
             const res = await fetch('/api/marketing/schedule', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action })
+                body: JSON.stringify({ action, mode })
             });
             const data = await res.json();
             if (data.success) {
@@ -600,21 +600,33 @@ export default function MarketingContentPage() {
                         <h4 className="font-bold text-gray-700 flex items-center gap-2">
                             <Zap size={16} className="text-yellow-500" /> Schedule Status
                         </h4>
-                        <div className="flex items-center justify-between bg-white p-4 rounded border border-gray-100">
-                            <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-3 bg-white p-4 rounded border border-gray-100">
+                            <div className="flex items-center gap-2 mb-2">
                                 <span className={clsx("w-3 h-3 rounded-full animate-pulse", schedulerStatus === 'active' ? "bg-green-500" : "bg-red-500")}></span>
-                                <span className="font-mono text-sm text-gray-600">Status: {schedulerStatus === 'active' ? 'Running' : 'Stopped'}</span>
+                                <span className="font-mono text-sm text-gray-600">
+                                    Status: {schedulerStatus === 'active' ? 'Running' : 'Stopped'}
+                                </span>
                             </div>
-                            <button
-                                onClick={toggleScheduler}
-                                className={clsx("px-4 py-2 rounded text-sm transition text-white", schedulerStatus === 'active' ? "bg-red-500 hover:bg-red-600" : "bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]")}
-                            >
-                                {schedulerStatus === 'active' ? 'Stop Auto-Pilot' : 'Activate Auto-Pilot'}
-                            </button>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    onClick={() => toggleScheduler('standard')}
+                                    className={clsx("px-4 py-2 rounded text-sm transition text-white font-medium", schedulerStatus === 'active' ? "bg-gray-400 hover:bg-gray-500" : "bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)]")}
+                                >
+                                    {schedulerStatus === 'active' ? 'Stop Scheduler' : 'Start Daily 9-to-4'}
+                                </button>
+                                <button
+                                    onClick={() => toggleScheduler('test')}
+                                    className={clsx("px-4 py-2 rounded text-sm transition text-white font-medium", schedulerStatus === 'active' ? "bg-gray-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700")}
+                                    disabled={schedulerStatus === 'active'}
+                                >
+                                    Start Test Mode (5m)
+                                </button>
+                            </div>
                         </div>
                         <div className="text-xs text-gray-400 space-y-1">
-                            <p>• 9 Daily Slots: 8am, 9am, 10am ... 4pm</p>
-                            <p>• Random Service Selection</p>
+                            <p>• Standard: 9 Daily Slots (8am - 4pm)</p>
+                            <p>• Test Mode: Runs every 5 minutes</p>
                             <p>• Google Drive Archive: Disabled (Missing Credentials)</p>
                         </div>
                     </div>

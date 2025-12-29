@@ -12,6 +12,7 @@ interface ScheduledJob {
 // Persisted state interface
 interface ScheduleState {
     isActive: boolean;
+    mode: 'standard' | 'test';
     lastRun: string | null;
 }
 
@@ -21,14 +22,19 @@ const STATE_FILE_PATH = path.join(process.cwd(), 'schedule-state.json');
 // --- State Management ---
 function loadState(): ScheduleState {
     if (!fs.existsSync(STATE_FILE_PATH)) {
-        return { isActive: false, lastRun: null };
+        return { isActive: false, mode: 'standard', lastRun: null };
     }
     try {
         const data = fs.readFileSync(STATE_FILE_PATH, 'utf-8');
-        return JSON.parse(data);
+        const state = JSON.parse(data);
+        return {
+            isActive: state.isActive || false,
+            mode: state.mode || 'standard',
+            lastRun: state.lastRun
+        };
     } catch (e) {
         console.error("Failed to load schedule state:", e);
-        return { isActive: false, lastRun: null };
+        return { isActive: false, mode: 'standard', lastRun: null };
     }
 }
 
@@ -44,45 +50,57 @@ function saveState(state: ScheduleState) {
 class MarketingScheduler {
     private tasks: any[] = [];
     public isActive: boolean = false;
+    public mode: 'standard' | 'test' = 'standard';
 
     constructor() {
         // Load initial state
         const state = loadState();
         this.isActive = state.isActive;
+        this.mode = state.mode;
 
         // If it was active before restart, we should probably auto-start? 
         // For now, let's require manual reactivation or check state on server start.
         if (this.isActive) {
-            this.start();
+            this.start(this.mode);
         }
     }
 
     // 1. Start the Daily Schedule
-    public start() {
+    public start(mode: 'standard' | 'test' = 'standard') {
         if (this.tasks.length > 0) {
             console.log("Scheduler already running. Restarting...");
             this.stop();
         }
 
-        console.log("Starting Marketing Scheduler (9 Daily Slots)...");
+        this.mode = mode;
+        console.log(`Starting Marketing Scheduler in ${mode.toUpperCase()} Mode...`);
 
-        // Define the 9 slots: 8am to 4pm
-        // Cron format: "0 8 * * *" (At minute 0 past hour 8)
-        const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16];
+        if (mode === 'standard') {
+            // Define the 9 slots: 8am to 4pm
+            // Cron format: "0 8 * * *" (At minute 0 past hour 8)
+            const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16];
 
-        hours.forEach(hour => {
-            const cronExpression = `0 ${hour} * * *`; // Every day at HH:00
-
-            const task = cron.schedule(cronExpression, async () => {
-                console.log(`[Scheduler] Triggering scheduled post for ${hour}:00...`);
+            hours.forEach(hour => {
+                const cronExpression = `0 ${hour} * * *`; // Every day at HH:00
+                const task = cron.schedule(cronExpression, async () => {
+                    console.log(`[Scheduler] Triggering scheduled post for ${hour}:00...`);
+                    await this.executeScheduledPost();
+                });
+                this.tasks.push(task);
+            });
+        } else if (mode === 'test') {
+            // Test Mode: Every 5 minutes
+            // Cron format: "*/5 * * * *"
+            console.log("Test Mode Activated: Running every 5 minutes.");
+            const task = cron.schedule('*/5 * * * *', async () => {
+                console.log(`[Scheduler] 🧪 Triggering TEST post [${new Date().toISOString()}]...`);
                 await this.executeScheduledPost();
             });
-
             this.tasks.push(task);
-        });
+        }
 
         this.isActive = true;
-        saveState({ isActive: true, lastRun: loadState().lastRun });
+        saveState({ isActive: true, mode: this.mode, lastRun: loadState().lastRun });
     }
 
     // 2. Stop/Pause
@@ -91,7 +109,7 @@ class MarketingScheduler {
         this.tasks.forEach(task => task.stop());
         this.tasks = [];
         this.isActive = false;
-        saveState({ isActive: false, lastRun: loadState().lastRun });
+        saveState({ isActive: false, mode: this.mode, lastRun: loadState().lastRun });
     }
 
     // 3. The Core Logic: "Execute Post"
